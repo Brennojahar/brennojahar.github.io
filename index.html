@@ -181,31 +181,66 @@
   /* ---------- Cards de projeto: leque 3D (ref. noahmiles.framer.website, componente "3D Look") ----------
      12 cards presos pela borda esquerda num eixo vertical, a cada 30°, como páginas de um livro.
      O anel gira em Y: arrastando (mola 600/100, 0,3°/px) e devagar sozinho quando ninguém mexe. */
-  .ring-stage {
-    left: 600px; top: 215px; width: 780px; height: 480px;
-    perspective: 1200px; perspective-origin: 50% 50%;
-    cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  /* ---------- Cards-slide em roda (ref. pinterest-70dd0303) ----------
+     Cada card é um slide de apresentação 16:10 (coral, tinta ou papel) com tipografia editorial.
+     Os cards ficam como raios de uma roda cujo centro está fora da área, à esquerda: o do meio reto,
+     os de cima e de baixo inclinando para fora, o de baixo sempre por cima (baralho aberto).
+     A roda anda um passo por vez: sozinha, pela rodinha do mouse ou arrastando. Só no desktop: o mobile usa a roda horizontal (.m-card). */
+  /* isolation: os z-index dos cards (100+) ficam presos aqui dentro; sem isso eles passavam por cima dos popups (z 11) */
+  .deck-stage { left: 600px; top: 61px; width: 834px; height: 833px; overflow: hidden; border-radius: 0 25px 25px 0; isolation: isolate;
+    touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .deck-stage.dragging { cursor: grabbing; }
+  .deck { position: absolute; inset: 0; }   /* plano, como a referência */
+  .sl { position: absolute; left: 0; top: 0; width: var(--cw, 400px); aspect-ratio: 16 / 10; padding: 0; border: 0; background: none;
+    transform-origin: 50% 50%; will-change: transform; -webkit-tap-highlight-color: transparent; }
+  .sl-in { position: absolute; inset: 0; display: block; overflow: hidden; border-radius: calc(var(--cw, 400px) * .03); container-type: inline-size;
+    text-align: left; font-family: 'Inter', system-ui, sans-serif; line-height: 1.2; letter-spacing: -0.01em; font-weight: 500;
+    box-shadow: var(--sl-shadow); transition: transform 550ms var(--ease-out), box-shadow 550ms var(--ease-out); }
+  /* Sombra projetada (ref.): cada card fica por cima do de cima dele, então a sombra vai PARA CIMA no eixo do card
+     e escurece a base do vizinho de baixo. Uma sombra de contato curta + uma longa e mole. */
+  .sl { --sl-shadow: 0 0 0 .5px rgba(0,0,0,.08), 0 -2px 6px rgba(0,0,0,.2), 0 -18px 34px -6px rgba(0,0,0,.22), 0 -52px 110px -10px rgba(0,0,0,.42); }
+  .sl.stacked .sl-in { box-shadow: none; }            /* na entrada: escondidos atrás do card do meio, sem somar sombra */
+  .sl.ghost { pointer-events: none; }                 /* dublê da entrada (some sozinho) */
+  .sl.lift { --sl-shadow: 0 0 0 .5px rgba(0,0,0,.08), 0 -3px 10px rgba(0,0,0,.22), 0 -24px 44px -6px rgba(0,0,0,.26), 0 -66px 130px -8px rgba(0,0,0,.48); }
+  .sl-red .sl-in { background: #e94f37; color: #fff1ec; }
+  .sl-ink .sl-in { background: #121216; color: #f1f1f3; }
+  .sl-paper .sl-in { background: #f3f3f1; color: #111115; }
+  @media (hover: hover) and (pointer: fine) {
+    .deck-stage:not(.dragging) .sl:hover .sl-in { transform: translateX(4%) scale(1.035); box-shadow: 0 0 0 .5px rgba(0,0,0,.08), 0 -3px 10px rgba(0,0,0,.22), 0 -24px 44px -6px rgba(0,0,0,.26), 0 -66px 130px -8px rgba(0,0,0,.48); }
   }
-  .ring-stage.dragging { cursor: grabbing; }
-  .ring { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; will-change: transform; }
-  .rcard {
-    position: absolute; left: 0; top: -165px; width: 248px; height: 330px;
-    transform-origin: 0 50%;
-    border-radius: 14px; overflow: hidden;
-    backface-visibility: visible;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.28) inset;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .rcard img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; transition: filter 300ms ease; }
-  /* capas 16:9 recortadas no card vertical: centro no assunto de cada foto */
-  .rcard[data-open="projeto-2"] img { object-position: 50% 50%; }
-  .rcard[data-open="projeto-3"] img { object-position: 42% 50%; }
-  .rcard[data-open="projeto-4"] img { object-position: 38% 50%; }
-  .ring-stage:hover .rcard img { filter: brightness(.82) saturate(.85); }
-  .ring-stage:hover .rcard:hover img, .rcard:focus-visible img { filter: none; }
-  html.kbd .rcard:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  html.kbd .sl:focus-visible .sl-in { outline: 2px solid var(--coral); outline-offset: 3px; }
+  .sl-in > span { position: absolute; display: block; }
+  .sl-in .sl-bar { left: 4cqw; right: 4cqw; top: 3.4cqw; display: flex; gap: 7cqw; font-size: 1.15cqw; line-height: 1.3; opacity: .6; }
+  .sl-bar .sl-r { margin-left: auto; }
+  .sl-k { font-size: 2.4cqw; text-transform: uppercase; letter-spacing: -0.005em; white-space: nowrap; }
+  .sl-n { font-size: 1.9cqw; opacity: .45; }
+  .sl-t { font-size: 1.3cqw; line-height: 1.42; opacity: .62; }
+  .sl-big { font-weight: 600; line-height: .8; letter-spacing: -0.07em; white-space: nowrap; color: rgba(255,255,255,.9); }
+  .sl-giant { font-weight: 600; font-size: 46cqw; line-height: .8; letter-spacing: -0.08em; color: rgba(255,255,255,.93); }
+  .sl-side { right: 3cqw; top: 13cqw; writing-mode: vertical-rl; font-size: 1.15cqw; letter-spacing: .06em; text-transform: uppercase; opacity: .72; }
+  .sl-rule { height: 1px; background: currentColor; opacity: .16; }
+  .sl-list { font-size: 7.4cqw; line-height: .98; letter-spacing: -0.045em; text-transform: uppercase; white-space: nowrap; }
+  .sl-list i { display: inline-block; width: 6cqw; font-style: normal; font-size: 3.4cqw; opacity: .4; vertical-align: .95em; }
+  .sl-col b { display: block; padding: 1.5cqw 0; border-top: 1px solid rgba(255,255,255,.14); font-size: 1.35cqw; font-weight: 500; opacity: .75; }
+  .sl-rows > span { display: grid; grid-template-columns: 13cqw 1fr; gap: 2cqw; padding: 2.2cqw 0; border-top: 1px solid rgba(17,17,21,.14); align-items: baseline; }
+  .sl-rows b { font-size: 2.4cqw; font-weight: 500; text-transform: uppercase; }
+  .sl-rows em { font-style: normal; font-size: 1.3cqw; line-height: 1.42; opacity: .6; }
+  .sl-rows.big > span { grid-template-columns: 17cqw 1fr; }
+  .sl-rows.big b { font-size: 3.6cqw; font-weight: 600; text-transform: none; letter-spacing: -0.045em; }
+  .sl-in .sl-nums { display: flex; gap: 6cqw; }
+  .sl-nums > span { display: flex; flex-direction: column; gap: .7cqw; font-size: 3.6cqw; letter-spacing: -0.035em; }
+  .sl-nums em { font-style: normal; font-size: 1.05cqw; text-transform: uppercase; letter-spacing: .02em; opacity: .5; }
+  .sl-fr { border-radius: 1.4cqw; overflow: hidden; background: #0c0c0f; }
+  .sl-fr img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
+  .sl-mid { font-size: 4.6cqw; line-height: .98; letter-spacing: -0.035em; text-transform: uppercase; }
+  .sl-mid.sm { font-size: 3.3cqw; line-height: 1.06; }
+  .sl-in .sl-chips { display: flex; gap: .8cqw; }
+  .sl-chips i { width: 5.5cqw; height: 3cqw; border-radius: .3cqw; background: #e94f37; }
+  .sl-chips i.w { background: #f1f1f3; }
+  .sl-chips i.s { width: 2cqw; }
   .ring-caption {
-    left: 990px; top: 668px; transform: translateX(-50%);
+    left: 1067px; top: 846px; transform: translateX(-50%); z-index: 3; min-width: 150px; justify-content: center;
+    padding: 7px 14px; border-radius: 999px; background: rgba(8,10,18,.62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     display: flex; align-items: center; gap: 10px; white-space: nowrap; line-height: normal; pointer-events: none;
   }
   .ring-caption .hint { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.6); transition: opacity 200ms ease; }
@@ -985,23 +1020,29 @@
     <div class="menu-foot"><a href="mailto:brebrunojk@gmail.com">brebrunojk@gmail.com</a><span>Jundiaí — Brasil</span></div>
   </div>
 
-  <div class="abs ring-stage" id="ring-stage">
-    <div class="ring" id="ring" style="transform:rotateY(15deg)">
-      <button class="rcard" style="transform:rotateY(0deg)" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><img src="assets/proj/collagen/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(30deg)" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><img src="assets/proj/sitcom/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(60deg)" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><img src="assets/proj/collagen/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(90deg)" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><img src="assets/proj/sitcom/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(120deg)" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides" tabindex="-1"><img src="assets/proj/collagen/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(150deg)" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina" tabindex="-1"><img src="assets/proj/sitcom/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(180deg)" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides" tabindex="-1"><img src="assets/proj/collagen/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(210deg)" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina" tabindex="-1"><img src="assets/proj/sitcom/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(240deg)" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides" tabindex="-1"><img src="assets/proj/collagen/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(270deg)" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina" tabindex="-1"><img src="assets/proj/sitcom/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(300deg)" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides" tabindex="-1"><img src="assets/proj/collagen/card.jpg" alt="" draggable="false"></button>
-      <button class="rcard" style="transform:rotateY(330deg)" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina" tabindex="-1"><img src="assets/proj/sitcom/card.jpg" alt="" draggable="false"></button>
+  <div class="abs deck-stage" id="deck-stage">
+    <div class="deck" id="deck">
+      <button class="sl sl-red" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 01<br>Campanha</span><span class="sl-r">09 / 2026</span></span><span class="sl-k" style="left:4cqw;top:14cqw">Collagen Peptides — Renova Be</span><span class="sl-t" style="left:4cqw;top:18cqw;width:40cqw">Campanha de lançamento: apresentar uma marca nova sem que quem já era cliente se sentisse fora dela.</span><span class="sl-side">Key visual · Site · Instagram · Meta · Google · E-mail</span><span class="sl-big" style="left:2.4cqw;top:25cqw;font-size:19.5cqw">Collagen</span></span></button>
+      <button class="sl sl-ink" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">2.1</span><span class="sl-k" style="left:10cqw;top:14cqw">Processo</span><span class="sl-rule" style="left:4cqw;right:4cqw;top:19cqw"></span><span class="sl-list" style="left:4cqw;top:22cqw"><i>1</i>Roteiro<br><i>2</i>Personagens<br><i>3</i>Cenas<br><i>4</i>Motion</span><span class="sl-col" style="left:64cqw;top:22cqw;width:32cqw"><b>Higgsfield · Seedance 2.5</b><b>Suno</b><b>Photoshop</b><b>After Effects</b></span></span></button>
+      <button class="sl sl-paper" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 01<br>Campanha</span><span class="sl-r">09 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">1.1</span><span class="sl-k" style="left:10cqw;top:14cqw">Key visual</span><span class="sl-rows" style="left:4cqw;top:20cqw;width:46cqw"><span><b>Conceito</b><em>Nova o suficiente para ser notada. Familiar o suficiente para ser sua.</em></span><span><b>Base 3D</b><em>Render do pote como referência fiel do produto.</em></span><span><b>Geração</b><em>Cenas criadas no Magnific a partir do render.</em></span></span><span class="sl-fr" style="left:54cqw;top:11cqw;width:42cqw;height:47.5cqw"><img src="assets/proj/collagen/capa.jpg" alt="" loading="eager" decoding="async" draggable="false"></span></span></button>
+      <button class="sl sl-ink" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">2.3</span><span class="sl-k" style="left:10cqw;top:14cqw">Episódio</span><span class="sl-nums" style="left:40cqw;top:11.5cqw"><span><em>Duração</em>77s</span><span><em>Personagens</em>3</span><span><em>Peças animadas</em>7</span></span><span class="sl-rule" style="left:4cqw;right:4cqw;top:19cqw"></span><span class="sl-fr" style="left:4cqw;top:22cqw;width:27cqw;height:36cqw"><img src="assets/proj/sitcom/betina-close.jpg" alt="" loading="eager" decoding="async" draggable="false"></span><span class="sl-mid" style="left:40cqw;top:22cqw">Conhecendo<br>a Renova+</span><span class="sl-chips" style="left:40cqw;top:39cqw"><i></i><i></i><i class="w"></i><i class="w s"></i></span><span class="sl-t" style="left:40cqw;top:46cqw;width:40cqw">Vertical 9:16 · Reels e TikTok · vídeo por IA, vozes e vinheta por IA, grafismos animados.</span></span></button>
+      <button class="sl sl-red" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-giant" style="right:-1cqw;top:-1.5cqw">77</span><span class="sl-k" style="left:4cqw;bottom:13cqw">Segundos de episódio</span><span class="sl-t" style="left:4cqw;bottom:4.2cqw;width:38cqw">Júnior, o fundador com alma de coach, tenta organizar a vida de todo mundo. Betina já resolveu tudo antes dele, pelo notebook.</span></span></button>
+      <button class="sl sl-paper" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">2.2</span><span class="sl-k" style="left:10cqw;top:14cqw">Personagens</span><span class="sl-rows big" style="left:4cqw;top:20cqw;width:52cqw"><span><b>Júnior</b><em>Fundador. Fala como quem dá palestra.</em></span><span><b>Betina</b><em>Diretoria. Resolve tudo pelo notebook.</em></span><span><b>Antonio</b><em>Participação especial. O pote gigante.</em></span></span><span class="sl-fr" style="left:61cqw;top:11cqw;width:35cqw;height:47.5cqw"><img src="assets/proj/sitcom/ideia.jpg" alt="" loading="eager" decoding="async" draggable="false" style="object-position:50% 38%"></span></span></button>
+      <button class="sl sl-ink" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 01<br>Campanha</span><span class="sl-r">09 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">1.2</span><span class="sl-k" style="left:10cqw;top:14cqw">Lançamento</span><span class="sl-nums" style="left:40cqw;top:11.5cqw"><span><em>Key visual</em>1</span><span><em>Canais</em>5</span><span><em>Lançamento</em>09.26</span></span><span class="sl-rule" style="left:4cqw;right:4cqw;top:19cqw"></span><span class="sl-fr" style="left:4cqw;top:22cqw;width:27cqw;height:36cqw"><img src="assets/proj/collagen/card.jpg" alt="" loading="eager" decoding="async" draggable="false"></span><span class="sl-mid sm" style="left:40cqw;top:22cqw">Site<br>Instagram<br>Anúncios Meta<br>Google Display<br>E-mail</span><span class="sl-chips" style="left:76cqw;top:23cqw"><i></i><i></i><i class="w"></i></span></span></button>
+      
+      
+      <button aria-hidden="true" tabindex="-1" class="sl sl-red" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 01<br>Campanha</span><span class="sl-r">09 / 2026</span></span><span class="sl-k" style="left:4cqw;top:14cqw">Collagen Peptides — Renova Be</span><span class="sl-t" style="left:4cqw;top:18cqw;width:40cqw">Campanha de lançamento: apresentar uma marca nova sem que quem já era cliente se sentisse fora dela.</span><span class="sl-side">Key visual · Site · Instagram · Meta · Google · E-mail</span><span class="sl-big" style="left:2.4cqw;top:25cqw;font-size:19.5cqw">Collagen</span></span></button>
+      <button aria-hidden="true" tabindex="-1" class="sl sl-ink" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">2.1</span><span class="sl-k" style="left:10cqw;top:14cqw">Processo</span><span class="sl-rule" style="left:4cqw;right:4cqw;top:19cqw"></span><span class="sl-list" style="left:4cqw;top:22cqw"><i>1</i>Roteiro<br><i>2</i>Personagens<br><i>3</i>Cenas<br><i>4</i>Motion</span><span class="sl-col" style="left:64cqw;top:22cqw;width:32cqw"><b>Higgsfield · Seedance 2.5</b><b>Suno</b><b>Photoshop</b><b>After Effects</b></span></span></button>
+      <button aria-hidden="true" tabindex="-1" class="sl sl-paper" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 01<br>Campanha</span><span class="sl-r">09 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">1.1</span><span class="sl-k" style="left:10cqw;top:14cqw">Key visual</span><span class="sl-rows" style="left:4cqw;top:20cqw;width:46cqw"><span><b>Conceito</b><em>Nova o suficiente para ser notada. Familiar o suficiente para ser sua.</em></span><span><b>Base 3D</b><em>Render do pote como referência fiel do produto.</em></span><span><b>Geração</b><em>Cenas criadas no Magnific a partir do render.</em></span></span><span class="sl-fr" style="left:54cqw;top:11cqw;width:42cqw;height:47.5cqw"><img src="assets/proj/collagen/capa.jpg" alt="" loading="eager" decoding="async" draggable="false"></span></span></button>
+      <button aria-hidden="true" tabindex="-1" class="sl sl-ink" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">2.3</span><span class="sl-k" style="left:10cqw;top:14cqw">Episódio</span><span class="sl-nums" style="left:40cqw;top:11.5cqw"><span><em>Duração</em>77s</span><span><em>Personagens</em>3</span><span><em>Peças animadas</em>7</span></span><span class="sl-rule" style="left:4cqw;right:4cqw;top:19cqw"></span><span class="sl-fr" style="left:4cqw;top:22cqw;width:27cqw;height:36cqw"><img src="assets/proj/sitcom/betina-close.jpg" alt="" loading="eager" decoding="async" draggable="false"></span><span class="sl-mid" style="left:40cqw;top:22cqw">Conhecendo<br>a Renova+</span><span class="sl-chips" style="left:40cqw;top:39cqw"><i></i><i></i><i class="w"></i><i class="w s"></i></span><span class="sl-t" style="left:40cqw;top:46cqw;width:40cqw">Vertical 9:16 · Reels e TikTok · vídeo por IA, vozes e vinheta por IA, grafismos animados.</span></span></button>
+      <button aria-hidden="true" tabindex="-1" class="sl sl-red" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-giant" style="right:-1cqw;top:-1.5cqw">77</span><span class="sl-k" style="left:4cqw;bottom:13cqw">Segundos de episódio</span><span class="sl-t" style="left:4cqw;bottom:4.2cqw;width:38cqw">Júnior, o fundador com alma de coach, tenta organizar a vida de todo mundo. Betina já resolveu tudo antes dele, pelo notebook.</span></span></button>
+      <button aria-hidden="true" tabindex="-1" class="sl sl-paper" data-open="projeto-2" data-name="Júnior &amp; Betina" aria-label="Abrir projeto Júnior &amp; Betina"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 02<br>Sitcom</span><span class="sl-r">10 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">2.2</span><span class="sl-k" style="left:10cqw;top:14cqw">Personagens</span><span class="sl-rows big" style="left:4cqw;top:20cqw;width:52cqw"><span><b>Júnior</b><em>Fundador. Fala como quem dá palestra.</em></span><span><b>Betina</b><em>Diretoria. Resolve tudo pelo notebook.</em></span><span><b>Antonio</b><em>Participação especial. O pote gigante.</em></span></span><span class="sl-fr" style="left:61cqw;top:11cqw;width:35cqw;height:47.5cqw"><img src="assets/proj/sitcom/ideia.jpg" alt="" loading="eager" decoding="async" draggable="false" style="object-position:50% 38%"></span></span></button>
+      <button aria-hidden="true" tabindex="-1" class="sl sl-ink" data-open="projeto-1" data-name="Collagen Peptides" aria-label="Abrir projeto Collagen Peptides"><span class="sl-in"><span class="sl-bar"><span>Breno Jahar<br>Portfólio</span><span class="sl-dot">● 01<br>Campanha</span><span class="sl-r">09 / 2026</span></span><span class="sl-n" style="left:4cqw;top:14cqw">1.2</span><span class="sl-k" style="left:10cqw;top:14cqw">Lançamento</span><span class="sl-nums" style="left:40cqw;top:11.5cqw"><span><em>Key visual</em>1</span><span><em>Canais</em>5</span><span><em>Lançamento</em>09.26</span></span><span class="sl-rule" style="left:4cqw;right:4cqw;top:19cqw"></span><span class="sl-fr" style="left:4cqw;top:22cqw;width:27cqw;height:36cqw"><img src="assets/proj/collagen/card.jpg" alt="" loading="eager" decoding="async" draggable="false"></span><span class="sl-mid sm" style="left:40cqw;top:22cqw">Site<br>Instagram<br>Anúncios Meta<br>Google Display<br>E-mail</span><span class="sl-chips" style="left:76cqw;top:23cqw"><i></i><i></i><i class="w"></i></span></span></button>
+      
+      
     </div>
   </div>
-  <div class="abs ring-caption" id="ring-caption" aria-hidden="true"><span class="hint">← Arraste para girar →</span><span class="name"></span></div>
+  <div class="abs ring-caption" id="ring-caption" aria-hidden="true"><span class="hint">↕ Role ou arraste</span><span class="name"></span></div>
 
   <footer class="abs bottom-meta"><span>Jundiaí - Brasil</span><span>2026</span></footer>
 
@@ -1748,7 +1789,7 @@
   // Transform que põe o popup (reduzido) sobre o card clicado. O card está em 3D,
   // então a posição vem do retângulo na tela, convertido para px do palco.
   function cardOrigin(trigger) {
-    if (!trigger || !trigger.classList.contains('rcard')) return null;
+    if (!trigger || !(trigger.classList.contains('rcard') || trigger.classList.contains('sl'))) return null;
     var r = trigger.getBoundingClientRect(), sr = stage.getBoundingClientRect(), k = sr.width / W;
     var cx = (r.left + r.width / 2 - sr.left) / k, cy = (r.top + r.height / 2 - sr.top) / k;
     var sc = Math.min(0.5, Math.max(0.2, (r.height / k) / POPUP_H));
@@ -2096,103 +2137,250 @@
   });
 
   // ---------- Leque 3D ----------
-  (function ring() {
-    var stageEl = document.getElementById('ring-stage');
-    var ringEl = document.getElementById('ring');
-    var caption = document.getElementById('ring-caption');
-    var nameEl = caption.querySelector('.name');
-    var cards = [].slice.call(ringEl.querySelectorAll('.rcard'));
-    var BASE = 15;                    // inclinação de repouso, igual à referência
-    var PER_PX = 0.3;                 // sensibilidade 3 → 0,3° por px arrastado
-    var AUTO_SPEED = 7;               // °/s quando ninguém mexe
-    var spring = { k: 600, c: 100 };  // mola do componente original (massa 1)
-    var target = BASE, pos = BASE, vel = 0;
-    var dragging = false, moved = false, startX = 0, startTarget = 0, pointerId = null;
-    var hovering = false, idleUntil = 0, last = 0, running = false;
+  // ---------- Cards-slide em roda (ref. pinterest-70dd0303) ----------
+  // Medido quadro a quadro na referência:
+  //  · geometria: centro a centro = 0,92 da altura do card; 14,5° de um card ao outro; raio = 2,28 × largura;
+  //  · troca: 1,35 s em cubic-bezier(.6,.05,.1,1) — sai devagar (8% em 0,25 s), corre no meio e freia longo;
+  //    depois segura parada ~2 s;
+  //  · cada card segue a roda com uma mola própria: os de baixo ficam ~2 quadros atrás e assentam com um
+  //    leve passo além (é isso que dá peso ao movimento).
+  // A posição da roda (pos, em cards) decide tudo; cada slide existe duas vezes no HTML, então a volta
+  // acontece fora da área visível.
+  function bezier(x1, y1, x2, y2) {
+    return function (x) {
+      if (x <= 0) return 0; if (x >= 1) return 1;
+      var t = x;
+      for (var n = 0; n < 8; n++) {
+        var cx = 3 * (1 - t) * (1 - t) * t * x1 + 3 * (1 - t) * t * t * x2 + t * t * t - x;
+        var dx = 3 * (1 - t) * (1 - t) * x1 + 6 * (1 - t) * t * (x2 - x1) + 3 * t * t * (1 - x2);
+        if (Math.abs(dx) < 1e-6) break;
+        t = Math.min(1, Math.max(0, t - cx / dx));
+      }
+      return 3 * (1 - t) * (1 - t) * t * y1 + 3 * (1 - t) * t * t * y2 + t * t * t;
+    };
+  }
+  var DECK_EASE = bezier(0.6, 0.05, 0.1, 1), DECK_STEP_MS = 1350;
 
-    function write() { ringEl.style.transform = 'rotateY(' + pos.toFixed(2) + 'deg)'; }
-    function autoOn() { return motion() === 'full' && !mobileMQ.matches && !dragging && !hovering && performance.now() > idleUntil && !open; }
+  function arcDeck(el, geo) {
+    var cards = [].slice.call(el.querySelectorAll('.sl')), N = cards.length, G = null;
+    var q = cards.map(function () { return null; }), qv = cards.map(function () { return 0; });
+    function measure() {
+      var W = el.clientWidth, H = el.clientHeight;
+      if (!W || !H) { G = null; return false; }
+      G = geo(W, H); G.H = H; G.ch = G.cw * 0.625; G.R = G.cw * 2.28; G.step = 0.92 * G.ch / G.R;
+      G.hide = (H / 2 + G.cw * 0.62) / G.R;
+      el.style.setProperty('--cw', G.cw + 'px');
+      return true;
+    }
+    function rel(i, p) { var k = ((i - p) % N + N) % N; return k >= N / 2 ? k - N : k; }
+    function place(i, p) {
+      var k = rel(i, p), a = k * G.step, c = cards[i];
+      if (Math.abs(a) > G.hide) { c.style.visibility = 'hidden'; return; }
+      var x = G.cx - G.R + G.R * Math.cos(a), y = G.H / 2 + G.R * Math.sin(a);
+      c.style.visibility = '';
+      c.style.zIndex = 100 + Math.round(k * 10);
+      c.style.transform = 'translate(' + (x - G.cw / 2).toFixed(1) + 'px,' + (y - G.ch / 2).toFixed(1) + 'px) rotate(' + (a * 57.29578).toFixed(3) + 'deg)';
+    }
+    // segue a posição da roda com uma mola por card (mais mole quanto mais abaixo); devolve se ainda mexe
+    function follow(master, dt) {
+      if (!G && !measure()) return false;
+      var moving = false;
+      for (var i = 0; i < N; i++) {
+        if (q[i] === null) q[i] = master;
+        var k = rel(i, master), w = Math.max(14, Math.min(52, 36 - 5 * k)), z = 0.62;   // o do meio quase colado; cada card abaixo, mais mole
+        for (var t = 0; t < dt; t += 1 / 240) {
+          var h = Math.min(1 / 240, dt - t);
+          qv[i] += (w * w * (master - q[i]) - 2 * z * w * qv[i]) * h;
+          q[i] += qv[i] * h;
+        }
+        if (Math.abs(master - q[i]) > 0.0004 || Math.abs(qv[i]) > 0.0004) moving = true; else { q[i] = master; qv[i] = 0; }
+        place(i, q[i]);
+      }
+      return moving;
+    }
+    function snap(master) {
+      if (!G && !measure()) return;
+      for (var i = 0; i < N; i++) { q[i] = master; qv[i] = 0; place(i, master); }
+    }
+    // pose livre (entrada): ângulo no arco, deslocamento vertical, escala e camada dados de fora
+    function pose(i, a, dy, sc, z) {
+      var c = cards[i];
+      if (Math.abs(a) > G.hide) { c.style.visibility = 'hidden'; return; }
+      var x = G.cx - G.R + G.R * Math.cos(a), y = G.H / 2 + G.R * Math.sin(a) + dy;
+      c.style.visibility = '';
+      c.style.zIndex = z;
+      c.style.transform = 'translate(' + (x - G.cw / 2).toFixed(1) + 'px,' + (y - G.ch / 2).toFixed(1) + 'px) rotate(' + (a * 57.29578).toFixed(3) + 'deg)' + (sc !== 1 ? ' scale(' + sc.toFixed(4) + ')' : '');
+    }
+    return { follow: follow, snap: snap, measure: measure, pose: pose, rel: rel, geo: function () { return G; }, N: N, cards: cards, px: function () { return G ? 0.92 * G.ch : 200; } };
+  }
 
+  // Desktop: troca sozinha (os cards descem pelo arco e um novo entra por cima), com a curva da referência.
+  // Rodinha e arrasto giram na mão: a roda segue com inércia (ganha velocidade aos poucos e freia aos poucos)
+  // e encaixa no card mais próximo.
+  (function deckDesktop() {
+    var stageEl = document.getElementById('deck-stage'), el = document.getElementById('deck');
+    if (!stageEl || !el) return;
+    var caption = document.getElementById('ring-caption'), nameEl = caption.querySelector('.name');
+    var D = arcDeck(el, function (Wd) { return { cw: 360, cx: Wd * 0.6 }; });
+    var pos = 0, vel = 0, target = 0, tw = null, omega = 6.5, running = false, last = 0;
+    var hovering = false, dragging = false, moved = false, startY = 0, startT = 0, pid = null, idleUntil = 0, snapT = 0;
+    var lastY = 0, lastTs = 0, vy = 0;
+    function autoOn() { return motion() === 'full' && !mobileMQ.matches && !hovering && !dragging && !open && !tw && performance.now() > idleUntil; }
+    function tween(to, d) { tw = { from: pos, to: to, t0: performance.now(), d: d || DECK_STEP_MS }; target = to; vel = 0; kick(); }
     function frame(now) {
       var dt = Math.min(0.05, (now - (last || now)) / 1000); last = now;
-      if (autoOn()) target -= AUTO_SPEED * dt;
-      // integra a mola em passos pequenos (estável com k alto)
-      for (var t = 0; t < dt; t += 1 / 240) {
-        var h = Math.min(1 / 240, dt - t);
-        vel += (-spring.k * (pos - target) - spring.c * vel) * h;
-        pos += vel * h;
+      if (tw) {
+        var p = (now - tw.t0) / tw.d;
+        if (p >= 1) { pos = tw.to; tw = null; } else pos = tw.from + (tw.to - tw.from) * DECK_EASE(p);
+      } else {
+        for (var t = 0; t < dt; t += 1 / 240) {
+          var h = Math.min(1 / 240, dt - t);
+          vel += (omega * omega * (target - pos) - 2 * omega * vel) * h;   // crítico: sem tranco, sem quicar
+          pos += vel * h;
+        }
+        if (Math.abs(target - pos) < 0.0004 && Math.abs(vel) < 0.0004) { pos = target; vel = 0; }
       }
-      write();
-      var settled = Math.abs(pos - target) < 0.01 && Math.abs(vel) < 0.01;
-      if (settled && !autoOn()) { running = false; last = 0; return; }
+      var cardsMoving = D.follow(pos, dt);
+      if (!tw && pos === target && !cardsMoving) { running = false; last = 0; return; }
       requestAnimationFrame(frame);
     }
     function kick() { if (!running && !document.hidden && !mobileMQ.matches) { running = true; last = 0; requestAnimationFrame(frame); } }
+    function hand(w) { if (tw) { pos = tw.from + (tw.to - tw.from) * DECK_EASE(Math.min(1, (performance.now() - tw.t0) / tw.d)); tw = null; } omega = w; }
+    setInterval(function () { if (autoOn()) tween(Math.round(pos) - 1); }, DECK_STEP_MS + 2050);
 
+    stageEl.addEventListener('wheel', function (e) {
+      if (mobileMQ.matches) return;
+      e.preventDefault();
+      endIntro();
+      var d = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY;
+      hand(6.5); target += d / 320; idleUntil = performance.now() + 2600;
+      clearTimeout(snapT); snapT = setTimeout(function () { omega = 6.5; target = Math.round(target); kick(); }, 180);
+      kick();
+    }, { passive: false });
     stageEl.addEventListener('pointerdown', function (e) {
       if (e.button !== 0) return;
-      dragging = true; moved = false; startX = e.clientX; startTarget = target; pointerId = e.pointerId;
-      spring = { k: 600, c: 100 };
-      kick();
+      dragging = true; moved = false; startY = lastY = e.clientY; lastTs = performance.now(); vy = 0; pid = e.pointerId;
     });
     stageEl.addEventListener('pointermove', function (e) {
-      if (!dragging || e.pointerId !== pointerId) return;
-      var dx = (e.clientX - startX) / (stage.getBoundingClientRect().width / W);  // em px do palco
-      if (!moved && Math.abs(dx) > 5) {
-        moved = true;
-        stageEl.classList.add('dragging');
-        try { stageEl.setPointerCapture(pointerId); } catch (err) {}   // só captura depois de virar arrasto, pra não engolir o clique
+      if (!dragging || e.pointerId !== pid) return;
+      var k = stage.getBoundingClientRect().width / W, dy = (e.clientY - startY) / k;
+      if (!moved && Math.abs(dy) > 5) {
+        endIntro(); moved = true; stageEl.classList.add('dragging'); hand(11); startT = pos; startY = e.clientY; dy = 0;
+        try { stageEl.setPointerCapture(pid); } catch (err) {}
       }
-      if (moved) { target = startTarget + dx * PER_PX; kick(); }
+      if (!moved) return;
+      var now = performance.now(), d = (e.clientY - lastY) / k / D.px();
+      vy = vy * 0.6 + 0.4 * (d / Math.max(0.008, (now - lastTs) / 1000)); lastY = e.clientY; lastTs = now;
+      target = startT - dy / D.px(); kick();
     });
     function end() {
       if (!dragging) return;
       dragging = false; stageEl.classList.remove('dragging');
-      // o clique (se vier) dispara logo após o pointerup; depois disso a trava some
-      if (moved) setTimeout(function () { moved = false; }, 0);
-      idleUntil = performance.now() + 1500;
-      kick();
-      setTimeout(kick, 1600);
+      if (moved) { omega = 6.5; target = Math.round(target - Math.max(-3, Math.min(3, vy * 0.22))); kick(); setTimeout(function () { moved = false; }, 0); }
+      idleUntil = performance.now() + 2600;
     }
     stageEl.addEventListener('pointerup', end);
     stageEl.addEventListener('pointercancel', end);
-    // Arrastou? Então o soltar não é clique.
     stageEl.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
-
     stageEl.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hovering = true; });
-    stageEl.addEventListener('pointerleave', function () { hovering = false; caption.classList.remove('show'); idleUntil = performance.now() + 800; setTimeout(kick, 850); });
-    cards.forEach(function (c, i) {
-      c.addEventListener('pointerenter', function () {
-        if (dragging) return;
-        nameEl.textContent = c.dataset.name;
-        caption.classList.add('show');
-      });
-      // Teclado (Tab): traz o card focado pra frente. Só foco de teclado — o foco que o clique
-      // do mouse dá ao botão girava o leque antes do clique terminar (bug do "volta pra um card").
+    stageEl.addEventListener('pointerleave', function () { hovering = false; caption.classList.remove('show'); idleUntil = performance.now() + 1200; });
+    D.cards.forEach(function (c, i) {
+      c.addEventListener('pointerenter', function () { if (dragging) return; nameEl.textContent = c.dataset.name; caption.classList.add('show'); });
+      // Teclado (Tab): o card focado vem para o meio da roda
       c.addEventListener('focus', function () {
         if (!c.matches(':focus-visible')) return;
-        var want = -i * 30 + BASE; want += Math.round((target - want) / 360) * 360;
-        target = want; idleUntil = performance.now() + 4000; spring = { k: 600, c: 100 };
-        nameEl.textContent = c.dataset.name; caption.classList.add('show'); kick();
+        endIntro();
+        var want = i; want += Math.round((pos - want) / D.N) * D.N;
+        idleUntil = performance.now() + 4000; tween(want, 1100);
+        nameEl.textContent = c.dataset.name; caption.classList.add('show');
       });
       c.addEventListener('blur', function () { caption.classList.remove('show'); });
     });
+    document.addEventListener('visibilitychange', function () { if (document.hidden) { endIntro(); if (tw) { pos = tw.to; tw = null; } pos = target = Math.round(target); vel = 0; D.snap(pos); } });
+    mobileMQ.addEventListener('change', function () { endIntro(); D.measure(); D.snap(pos); });
 
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) kick(); else { pos = target; vel = 0; write(); } });
-    addEventListener('popstate', function () { setTimeout(kick, 400); });
-    mobileMQ.addEventListener('change', kick);
-    document.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) setTimeout(kick, 400); });
-
-    // Entrada: o leque chega girando com uma mola mais macia; o estado final já está no HTML.
-    if (motion() === 'full' && !mobileMQ.matches) {
-      spring = { k: 90, c: 26 };
-      pos = target = BASE + 150; write();                     // parado atrás da cortina
-      idleUntil = performance.now() + INTRO + 1800;
-      setTimeout(function () { target = BASE; kick(); }, INTRO);
-      stageEl.animate({ opacity: [0, 1] }, { duration: 700, delay: INTRO + 150, easing: 'ease-out', fill: 'backwards' });
-      setTimeout(function () { spring = { k: 600, c: 100 }; }, INTRO + 1800);
+    // Entrada: um card só (o do meio) sobe de baixo, rápido e freando até o centro. Ao chegar ele dá um impulso
+    // (cresce um pouco, como se fosse levantado) e o baralho abre em leque por trás dele: os de cima sobem, os de
+    // baixo descem, o leque passa só um pouco do lugar (10%) e assenta.
+    // Camadas: no baralho o de baixo fica sempre por cima, mas na entrada todos saem de TRÁS do card do meio.
+    // Para os de baixo trocarem de camada sem salto, cada um ganha um dublê idêntico atrás do card do meio;
+    // o card verdadeiro já fica na camada final, invisível, e aparece por cima do dublê num fade curto.
+    // Como os dois estão na mesma pose, só o cantinho em que ele encosta no card do meio muda, e muda suave.
+    var intro = null;
+    function endIntro() {
+      if (!intro) return;
+      intro.ghosts.forEach(function (g) { if (g.el.parentNode) g.el.parentNode.removeChild(g.el); });
+      intro = null;
+      D.cards.forEach(function (c) { c.classList.remove('stacked', 'lift'); c.style.opacity = ''; });
+      D.snap(pos);
     }
-    kick();
+    function introDeck(delay) {
+      var G = D.geo();
+      var E_RISE = bezier(0.16, 1, 0.3, 1), E_OPEN = bezier(0.22, 0.8, 0.3, 1), E_CLOSE = bezier(0.35, 0, 0.2, 1);
+      var RISE = 1050, OPEN_AT = 680, OPEN = 520, CLOSE = 700, PEAK = 1.1, LAG = 24, LIFT = 0.045;
+      var SWAP = 0.45, FADE = 260;            // a troca de camada começa no meio da abertura e dura 260ms
+      var VIS = Math.floor(G.hide / G.step), dy0 = G.H / 2 + G.ch / 2 + 70, END = OPEN_AT + VIS * LAG + OPEN + CLOSE;
+      var ks = D.cards.map(function (c, i) { return D.rel(i, 0); });
+      var ghosts = [], t0 = 0;
+      function pulse(t) {                      // impulso do card do meio: sobe rápido, volta devagar
+        var u = (t - OPEN_AT) / OPEN;
+        if (u <= 0) return 0;
+        if (u <= 1) return E_OPEN(u);
+        return 1 - E_CLOSE(Math.min(1, (t - OPEN_AT - OPEN) / CLOSE));
+      }
+      function local(t, k) { return t - OPEN_AT - Math.abs(k) * LAG; }      // os de fora saem um tico depois
+      function spread(t, k) {
+        var u = local(t, k);
+        if (u <= 0) return 0;
+        if (u < OPEN) return PEAK * E_OPEN(u / OPEN);
+        if (u < OPEN + CLOSE) return PEAK + (1 - PEAK) * E_CLOSE((u - OPEN) / CLOSE);
+        return 1;
+      }
+      function render(t) {
+        var dy = dy0 * (1 - E_RISE(Math.min(1, t / RISE))), lift = 1 + LIFT * pulse(t);
+        for (var i = 0; i < D.N; i++) {
+          var k = ks[i], c = D.cards[i];
+          if (Math.abs(k) > VIS) { c.style.visibility = 'hidden'; continue; }
+          var sp = spread(t, k), u = local(t, k);
+          if (k !== 0 && sp > 0 && c.classList.contains('stacked')) c.classList.remove('stacked');   // a sombra entra junto
+          D.pose(i, k * G.step * sp, dy, k === 0 ? lift : 1, 100 + k * 10);
+          if (k > 0) {
+            var f = Math.min(1, Math.max(0, (u - OPEN * SWAP) / FADE));
+            c.style.opacity = f < 1 ? f.toFixed(3) : '';
+            var g = ghosts[k - 1];
+            if (g && g.el.parentNode) {
+              g.el.style.transform = c.style.transform; g.el.style.visibility = c.style.visibility;
+              if (sp > 0) g.el.classList.toggle('stacked', f > 0);            // a sombra passa do dublê para o card
+              if (f >= 1 && u > OPEN * SWAP + FADE + 600) g.el.parentNode.removeChild(g.el);
+            }
+          }
+        }
+        D.cards[ks.indexOf(0)].classList.toggle('lift', t >= OPEN_AT && t < OPEN_AT + OPEN + 200);
+      }
+      function frame(now) {
+        if (!intro) return;
+        if (!t0) t0 = now;
+        var t = now - t0;
+        if (t >= END) { endIntro(); return; }
+        render(t);
+        requestAnimationFrame(frame);
+      }
+      for (var k = 1; k <= VIS; k++) {         // dublês dos cards de baixo, atrás do card do meio
+        var real = D.cards[ks.indexOf(k)], el = real.cloneNode(true);
+        el.classList.add('ghost', 'stacked'); el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1;
+        el.removeAttribute('data-open'); el.style.zIndex = 95 - k * 10;
+        real.parentNode.insertBefore(el, real);
+        ghosts.push({ el: el });
+      }
+      intro = { ghosts: ghosts };
+      D.cards.forEach(function (c, i) { if (ks[i] !== 0) c.classList.add('stacked'); });
+      render(0);                               // já começa escondido embaixo do palco (o palco corta)
+      idleUntil = performance.now() + delay + END + 1800;
+      setTimeout(function () { if (intro) requestAnimationFrame(frame); }, delay);
+    }
+
+    D.snap(pos);
+    if (motion() === 'full' && !mobileMQ.matches && D.geo()) introDeck(INTRO + 420);
   })();
 
   // ---------- Texto em movimento (ref. makro.framer.website) ----------
@@ -2786,7 +2974,7 @@
     el.appendChild(document.createElement('i'));
     document.body.appendChild(el);
     document.documentElement.classList.add('has-cursor');
-    var CLICK = 'a, button, [role="button"], label, select, summary, .rcard, .ring-stage, .ba input, [data-open], [data-close]';
+    var CLICK = 'a, button, [role="button"], label, select, summary, .sl, .deck-stage, .ba input, [data-open], [data-close]';
     // segue o mouse sem atraso (cursor que arrasta atrás parece travado)
     addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
